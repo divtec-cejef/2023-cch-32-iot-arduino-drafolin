@@ -2,7 +2,9 @@
 
 void setup() {
   Serial.begin(9600);
-  while (!Serial) {};
+  while (!Serial) {
+  };
+  Serial.println("Ready.");
 
   if (!SigFox.begin()) {
     Serial.println("Unable to init the Atmel 1DB4E6 Sigfox chipset");
@@ -10,15 +12,13 @@ void setup() {
   }
   SigFox.debug();
 
-/*
-TO DO...
-*/
-  
+  /*
+  TO DO...
+  */
 }
 
-void loop()
-{  
-/*
-TO DO...
-*/
+void loop() {
+  /*
+  TO DO...
+  */
 }
