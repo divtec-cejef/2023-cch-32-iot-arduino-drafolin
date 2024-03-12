@@ -1,4 +1,8 @@
 <?php
+if ($_SERVER["REQUEST_METHOD"] != "POST") {
+	die(405);
+}
+
 $config = parse_ini_file("db_config.ini");
 $host = $config['HOST'];
 $db = $config['DB'];
