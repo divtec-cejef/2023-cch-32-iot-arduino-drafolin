@@ -16,7 +16,7 @@ $conn = new mysqli($host, $uname, $pass, $db);
 if ($conn->connect_error) {
 	die("Connection failed: " . $conn->connect_error);
 }
-echo "Connected successfully";
+echo "Connected successfully\n";
 
 $sql = "INSERT INTO measures VALUES (null, ?, ?, ?);";
 $qry = $conn->prepare($sql);
@@ -24,3 +24,4 @@ if (!$qry->execute([$_POST["t"], $_POST["h"], $_POST["time"]])) {
 	echo $qry->error;
 	die(500);
 }
+echo "Saved successfully";
