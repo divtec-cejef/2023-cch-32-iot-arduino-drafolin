@@ -20,9 +20,7 @@ echo "Connected successfully";
 
 $sql = "INSERT INTO measures VALUES (null, ?, ?, ?);";
 $qry = $conn->prepare($sql);
-$res;
-$qry->bind_param("dds", $_REQUEST["t"], $_REQUEST["h"], $_REQUEST["time"]);
-if (!$qry->execute()) {
+if (!$qry->execute([$_POST["t"], $_POST["h"], $_POST["time"]])) {
 	echo $qry->error;
 	die(500);
 }
