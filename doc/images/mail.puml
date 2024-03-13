@@ -1,19 +1,22 @@
 @startuml MailScheme
 
 node MKRFox1200 {
-	port SigFox
-	[Arduino] -> SigFox
+	[Arduino]
 	DHT - [Arduino]
+	[Arduino] --> SigFox
 }
 
-cloud SigFox as SigFoxCloud {
-	portin Antenne
+database SigFox as SigFoxCloud {
 	SigFox -> Antenne
-	Antenne --> [SRV]
+	Antenne - [SRV]
 }
 
-cloud Infomaniak {
-	[SRV] --> [Serveur SMTP]: SMTP
+
+cloud Internet {
+	database Infomaniak {
+		[Serveur SMTP]
+	}
 }
 
+[SRV] -> [Serveur SMTP]
 @enduml
