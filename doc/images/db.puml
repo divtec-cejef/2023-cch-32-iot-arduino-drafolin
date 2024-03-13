@@ -1,0 +1,29 @@
+@startuml ApacheScheme
+
+node MKRFox1200 {
+	port SigFox
+	[Arduino] -> SigFox
+	DHT - [Arduino]
+}
+
+cloud SigFox as SigFoxCloud {
+	portin Antenne
+	SigFox -> Antenne
+	Antenne -> [SRV]
+}
+
+cloud Infomaniak {
+	[SRV] --> HTTP
+	HTTP - [Apache]
+	[Apache] <--> [MySql]
+}
+
+@enduml
+
+@startuml DBScheme
+entity Measure {
+	temperature : Float
+	humidity : Float
+	measure_time : Timestamp
+}
+@enduml
