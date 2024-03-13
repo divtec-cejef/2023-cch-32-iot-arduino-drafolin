@@ -39,15 +39,13 @@ void loop() {
   } else if (!hasSent) {
     manageData();
     hasSent = true;
+    totalTime = 0;
     return;
   }
 
-  if (totalTime <= HOUR) {
-    hasSent = false;
-  } else if (!hasSent) {
+  if (totalTime > HOUR) {
     manageData();
     totalTime -= HOUR;
-    hasSent = true;
     return;
   }
 }
