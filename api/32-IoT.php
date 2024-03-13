@@ -20,7 +20,7 @@ echo "Connected successfully\n";
 
 $sql = "INSERT INTO measures VALUES (null, ?, ?, ?);";
 $qry = $conn->prepare($sql);
-if (!$qry->execute([$_POST["t"], $_POST["h"], $_POST["time"]])) {
+if (!$qry->execute([$_POST["t"], $_POST["h"],  gmdate("Y-m-d H:i:s", $_POST["time"])])) {
 	echo $qry->error;
 	die(500);
 }
