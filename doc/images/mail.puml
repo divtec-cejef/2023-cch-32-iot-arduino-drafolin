@@ -9,16 +9,11 @@ node MKRFox1200 {
 cloud SigFox as SigFoxCloud {
 	portin Antenne
 	SigFox -> Antenne
-	Antenne -> [SRV]
+	Antenne --> [SRV]
 }
 
 cloud Infomaniak {
-	frame "Web Host" {
-		SRV-->HTTP
-		HTTP - [Apache]
-	}
-
-	[Apache] -> [Serveur SMTP]: SMTP
+	[SRV] --> [Serveur SMTP]: SMTP
 }
 
 @enduml
