@@ -1,29 +1,39 @@
 @startuml ApacheScheme
 
 node MKRFox1200 {
-	port SigFox
-	[Arduino] -> SigFox
+	[Arduino] -u-> SigFox
 	DHT - [Arduino]
 }
 
-cloud SigFox as SigFoxCloud {
-	portin Antenne
+database SigFox as SigFoxCloud {
 	SigFox -> Antenne
-	Antenne -> [SRV]
+	Antenne --> [SRV]
 }
 
-cloud Infomaniak {
-	[SRV] --> HTTP
-	HTTP - [Apache]
-	[Apache] <--> [MySql]
+cloud Internet {
+	database Infomaniak {
+		[SRV] -> HTTP
+		HTTP - [Apache]
+		[Apache] <--> [MySql]
+	}
 }
 
 @enduml
 
 @startuml DBScheme
 entity Measure {
+	id: Bigint
 	temperature : Float
 	humidity : Float
 	measure_time : Timestamp
+	sequence_number: Int
+	device: Bigint
 }
+
+entity Device {
+	id: Bigint
+	{field} device_id: Varchar(6)
+}
+
+Measure "*" - " 0..1" Device
 @enduml
