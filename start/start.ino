@@ -2,7 +2,13 @@
 #include <DHT_U.h>
 #include <SigFox.h>
 
+const int SECOND = 1000;
+const int MINUTE = 60 * SECOND;
+const int HOUR = 60 * MINUTE;
+
 DHT dht(5, DHT11);
+bool hasSent = false;
+int totalTime = 0;
 
 void setup() {
   Serial.begin(9600);
@@ -26,7 +32,41 @@ void setup() {
 }
 
 void loop() {
-  delay(2000);
+  delay(200);
+  totalTime += 200;
+  if (digitalRead(1) == 0) {
+    hasSent = false;
+  } else if (!hasSent) {
+    manageData();
+    hasSent = true;
+    return;
+  }
+
+  if (totalTime <= HOUR) {
+    hasSent = false;
+  } else if (!hasSent) {
+    manageData();
+    totalTime -= HOUR;
+    hasSent = true;
+    return;
+  }
+}
+
+void sendPacket(float temp, float hum) {
+  SigFox.begin();
+  SigFox.beginPacket();
+  SigFox.write(temp);
+  SigFox.write(hum);
+  int status = SigFox.endPacket();
+  SigFox.end();
+  if (status == 0) {
+    Serial.println("Packet sent successfully");
+  } else {
+    Serial.println("Error while sending packet");
+  }
+}
+
+void manageData() {
   float temp, hum;
 
   // Read temperature and humidity
@@ -37,24 +77,5 @@ void loop() {
     Serial.println(F("Failed to read from DHT sensor!"));
     return;
   }
-
-  Serial.print("temp: ");
-  Serial.println(temp);
-  Serial.print("hum: ");
-  Serial.println(hum);
-
-  if (digitalRead(1) == 1) {
-    SigFox.begin();
-    SigFox.beginPacket();
-    SigFox.write(temp);
-    SigFox.write(hum);
-    int status = SigFox.endPacket();
-    SigFox.end();
-    if (status == 0) {
-      Serial.println("Packet sent successfully");
-    } else {
-      Serial.println("Error while sending packet");
-    }
-    return;
-  }
+  sendPacket(temp, hum);
 }
