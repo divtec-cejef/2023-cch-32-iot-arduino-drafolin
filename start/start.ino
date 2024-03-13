@@ -35,12 +35,26 @@ void loop() {
 
   if (isnan(hum) || isnan(temp)) {
     Serial.println(F("Failed to read from DHT sensor!"));
+    return;
   }
 
-  Serial.print("btn: ");
-  Serial.println(digitalRead(1));
   Serial.print("temp: ");
   Serial.println(temp);
   Serial.print("hum: ");
   Serial.println(hum);
+
+  if (digitalRead(1) == 1) {
+    SigFox.begin();
+    SigFox.beginPacket();
+    SigFox.write(temp);
+    SigFox.write(hum);
+    int status = SigFox.endPacket();
+    SigFox.end();
+    if (status == 0) {
+      Serial.println("Packet sent successfully");
+    } else {
+      Serial.println("Error while sending packet");
+    }
+    return;
+  }
 }
