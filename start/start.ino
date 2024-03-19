@@ -1,3 +1,4 @@
+#include <ArduinoLowPower.h>
 #include <DHT.h>
 #include <DHT_U.h>
 #include <SigFox.h>
@@ -12,8 +13,6 @@ int totalTime = 0;
 
 void setup() {
   Serial.begin(9600);
-  while (!Serial) {
-  }
   Serial.println("Ready.");
 
   if (!SigFox.begin()) {
@@ -22,9 +21,11 @@ void setup() {
   }
   SigFox.debug();
 
+  dht.begin();
+
   pinMode(1, INPUT);
 
-  dht.begin();
+  LowPower.attachInterruptWakeup(1, SigFox_Data_Sender, PinStatus::RISING);
 
   /*
   TO DO...
@@ -32,25 +33,19 @@ void setup() {
 }
 
 void loop() {
-  delay(200);
-  totalTime += 200;
-  if (digitalRead(1) == 0) {
-    hasSent = false;
-  } else if (!hasSent) {
-    manageData();
-    hasSent = true;
-    totalTime = 0;
-    return;
-  }
+  SigFox_Data_Sender();
+  GoToSleep();
+}
 
-  if (totalTime > HOUR) {
-    manageData();
-    totalTime -= HOUR;
-    return;
-  }
+void GoToSleep() {
+  Serial.println("MKR FOX 1200 - Going in sleep");
+  Serial.flush();
+  Serial.end();
+  LowPower.deepSleep(HOUR);
 }
 
 void sendPacket(float temp, float hum) {
+  Serial.println("Begin data transmission");
   SigFox.begin();
   SigFox.beginPacket();
   SigFox.write(temp);
@@ -64,7 +59,11 @@ void sendPacket(float temp, float hum) {
   }
 }
 
-void manageData() {
+void SigFox_Data_Sender() {
+  Serial.begin(9600);
+  dht.begin();
+  delay(500);
+  Serial.println("Begin data reading");
   float temp, hum;
 
   // Read temperature and humidity
@@ -75,5 +74,7 @@ void manageData() {
     Serial.println(F("Failed to read from DHT sensor!"));
     return;
   }
+
+  Serial.println("Data read successfully");
   sendPacket(temp, hum);
 }
