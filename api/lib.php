@@ -38,6 +38,17 @@ function saveMeasure(float $temp, float $hum, string $time, int $seq, int $devic
 	$qry = $conn->prepare($sql);
 	if (!$qry->execute([$temp, $hum, $time, $seq, $device_id])) {
 		echo $qry->error;
-		die(500);
+		die (500);
 	}
+}
+
+function getMeasures()
+{
+	global $conn;
+	$sql = "SELECT * FROM measures m INNER JOIN devices d ON (m.device=d.id);";
+	$qry = $conn->prepare($sql);
+	$qry->execute();
+	$res = $qry->get_result();
+	$res = $res->fetch_all(MYSQLI_ASSOC);
+	return $res;
 }
