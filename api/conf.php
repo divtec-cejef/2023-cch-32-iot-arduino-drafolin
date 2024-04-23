@@ -11,6 +11,8 @@ $conn = new mysqli($host, $uname, $pass, $db);
 
 // Check connection
 if ($conn->connect_error) {
-	die ("Connection failed: " . $conn->connect_error);
+    die ("Connection failed: " . $conn->connect_error);
 }
-echo "<script>console.log('Connected successfully')</script>";
+
+if (!$_SERVER["REQUEST_METHOD"] == "GET")
+    echo "<script>console.log('Connected successfully')</script>";
