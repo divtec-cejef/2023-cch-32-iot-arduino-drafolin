@@ -2,14 +2,18 @@
 #include <DHT.h>
 #include <DHT_U.h>
 #include <SigFox.h>
+#include <iomanip>
+#include <sstream>
 
-const int SECOND = 1000;
+const int SECOND = 1;
 const int MINUTE = 60 * SECOND;
 const int HOUR = 60 * MINUTE;
 
 DHT dht(5, DHT11);
 bool hasSent = false;
 int totalTime = 0;
+
+unsigned int loopDelaySeconds = HOUR;
 
 void setup() {
   Serial.begin(9600);
@@ -26,10 +30,6 @@ void setup() {
   pinMode(1, INPUT);
 
   LowPower.attachInterruptWakeup(1, SigFox_Data_Sender, PinStatus::RISING);
-
-  /*
-  TO DO...
-  */
 }
 
 void loop() {
@@ -41,22 +41,50 @@ void GoToSleep() {
   Serial.println("MKR FOX 1200 - Going in sleep");
   Serial.flush();
   Serial.end();
-  LowPower.deepSleep(HOUR);
+  LowPower.deepSleep((int)(loopDelaySeconds * 1000));
 }
 
 void sendPacket(float temp, float hum) {
   Serial.println("Begin data transmission");
+
+  // Start the module
   SigFox.begin();
+  // Wait at least 30mS after first configuration (100mS before)
+  delay(100);
+  // Clears all pending interrupts
+  SigFox.status();
+  delay(1);
+
   SigFox.beginPacket();
   SigFox.write(temp);
   SigFox.write(hum);
-  int status = SigFox.endPacket();
-  SigFox.end();
-  if (status == 0) {
-    Serial.println("Packet sent successfully");
+  int status = SigFox.endPacket(true);
+
+  if (status > 0) {
+    Serial.println("No transmission");
   } else {
-    Serial.println("Error while sending packet");
+    Serial.println("Transmission ok");
   }
+
+  Serial.println(SigFox.status(SIGFOX));
+  Serial.println(SigFox.status(ATMEL));
+
+  if (SigFox.parsePacket()) {
+    std::stringstream message;
+    while (SigFox.available()) {
+      message << std::setfill('0') << std::setw(2) << std::hex << SigFox.read();
+    }
+
+    message >> loopDelaySeconds;
+
+  } else {
+    Serial.println("Could not get any response from the server");
+    Serial.println("Check the Sigfox coverage in your area");
+    Serial.println(
+        "If you are indoor, check the 20 dB coverage or move near a window");
+  }
+
+  SigFox.end();
 }
 
 void SigFox_Data_Sender() {
