@@ -3,38 +3,44 @@
 require "./lib.php";
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+  // handle SigFox requests
 
-    $device_id = $_POST["device"];
+  // finds the database id of the device
+  $device_id = getDeviceId($_POST["device"]);
 
-    $device_id = getDeviceId($device_id);
-    if (!$device_id) {
-        $device_id = createDevice($_POST["device"]);
-    }
+  // if it doesn't exist, create it
+  if (!$device_id) {
+    $device_id = createDevice($_POST["device"]);
+  }
 
-    $temp = $_POST["t"];
-    $hum = $_POST["h"];
-    $time = gmdate("Y-m-d H:i:s", $_POST["time"]);
-    $seq = $_POST["seq"];
+  $temp = $_POST["t"];
+  $hum = $_POST["h"];
+  // format the time for db insertion
+  $time = gmdate("Y-m-d H:i:s", $_POST["time"]);
+  $seq = $_POST["seq"];
 
-    saveMeasure($temp, $hum, $time, $seq, $device_id);
+  saveMeasure($temp, $hum, $time, $seq, $device_id);
 
-    $refresh_rate = getConfig($_POST["device"])["refresh_secs"];
+  // get refresh rate of the device
+  $refresh_rate = getConfig($_POST["device"])["refresh_secs"];
 
-    header("Content-Type: application/json");
+  // required by SigFox
+  header("Content-Type: application/json");
 
-    // Transforme la donnée de décimal à hexadécimal en gardant une taille de 16 caractères (8 bytes)
-    $hex_refresh_rate = str_pad(dechex($refresh_rate), 16, "0", STR_PAD_LEFT);
-    echo json_encode([$_POST["device"] => ["downlinkData" => $hex_refresh_rate]]);
-} else if (str_contains($_SERVER["REQUEST_URI"], "rate")) {
-    if (!array_key_exists("id", $_GET))
-        die(402);
+  // encode the refresh rate in hexadecimal
+  $short_hex_refresh_rate = dechex($refresh_rate);
+  // pad the beggining of the hex string with 0's 
+  // to keep a length of 16 character (8 bytes)
+  // Required by SigFox
+  $hex_refresh_rate = str_pad($short_hex_refresh_rate, 16, "0", STR_PAD_LEFT);
 
-    $device_id = $_GET["id"];
-
-
+  // encode the string into json, with the structure required by SigFox
+  echo json_encode([$_POST["device"] => ["downlinkData" => $hex_refresh_rate]]);
 } else {
-    global $data;
-    $data = getMeasures();
+  global $data;
+  // fetches measures from the db
+  $data = getMeasures();
 
-    require "./list.view.php";
+  // displays them in a php page 
+  require "./list.view.php";
 }

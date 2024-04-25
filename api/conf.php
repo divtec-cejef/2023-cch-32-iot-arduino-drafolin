@@ -14,5 +14,7 @@ if ($conn->connect_error) {
     die ("Connection failed: " . $conn->connect_error);
 }
 
-if (!$_SERVER["REQUEST_METHOD"] == "GET")
+// only log the message if the method is GET, 
+// indicating it originates from a browser
+if ($_SERVER["REQUEST_METHOD"] == "GET")
     echo "<script>console.log('Connected successfully')</script>";
